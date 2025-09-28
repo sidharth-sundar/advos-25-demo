@@ -12,10 +12,6 @@
 #define POLL_INTERVAL 1000 /* poll for kthread_stop every second */
 #define MAX_CONTENDING_THREADS 10
 static int created_threads = 0;
-
-static DECLARE_WAIT_QUEUE_HEAD(start_waitq);
-static bool start_flag = false;
-
 			     
 unsigned int ops_per_thread = 1000000; 
 unsigned int num_readers = 5;
@@ -24,6 +20,9 @@ module_param(ops_per_thread, int, 0664);
 module_param(num_readers, int, 0664);
 
 unsigned int counter;	/* shared data: */
+
+static DECLARE_WAIT_QUEUE_HEAD(start_waitq); /* sync kthread start */
+static bool start_flag = false;
 
 DEFINE_SEQLOCK(counter_lock);
 struct task_struct *threads[MAX_CONTENDING_THREADS];
