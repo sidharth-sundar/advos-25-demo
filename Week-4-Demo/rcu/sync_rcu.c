@@ -38,15 +38,15 @@ static int writer_function(void *data)
   while (i < ops_per_thread && !kthread_should_stop()) {
     
     unsigned int *new_counter = kmalloc(sizeof(counter), GFP_KERNEL);
-    spin_lock(&counter_lock);
+    spin_lock(&counter_lock); /* block concurrent writers, but NOT readers */
 
-    unsigned int *old_counter = rcu_dereference(counter);
+    unsigned int *old_counter = rcu_dereference(counter); /* get valid reference to pointer being updated */
     *new_counter = *old_counter + 1;
-    rcu_assign_pointer(counter, new_counter);
+    rcu_assign_pointer(counter, new_counter); /* make the new value visible to new readers */
 
-    spin_unlock(&counter_lock);
-    synchronize_rcu();
-    kfree(old_counter);
+    spin_unlock(&counter_lock); /* allow writers to act on the new value */
+    synchronize_rcu(); /* wait for all readers holding references on old_counter to complete */
+    kfree(old_counter); /* free with no risk of read-after-free */
 
     i++;
     //    msleep_interruptible(1);
@@ -79,7 +79,7 @@ static int read_function(void *data)
 
     rcu_read_lock();
     // printk(PRINT_PREF "counter: %d\n", counter);
-    arr[i] = *rcu_dereference(counter);
+    arr[i] = *rcu_dereference(counter); /* get consistent snapshot of ptr value for RCU read critical section */
     rcu_read_unlock();
 
     i++;
