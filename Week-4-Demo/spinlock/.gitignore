@@ -4,6 +4,7 @@
 *.cmd
 ./.*
 *~
+*.out
 modules.order
 Module.symvers
-sign-modules.sh
+sign_modules.sh

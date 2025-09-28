@@ -12,7 +12,6 @@
 #define POLL_INTERVAL 1000 /* poll for kthread_stop every second */
 #define MAX_CONTENDING_THREADS 10
 static int created_threads = 0;
-
 			     
 unsigned int ops_per_thread = 1000000; 
 unsigned int num_readers = 5;
@@ -22,11 +21,15 @@ module_param(num_readers, int, 0664);
 
 unsigned int counter;	/* shared data: */
 
+static DECLARE_WAIT_QUEUE_HEAD(start_waitq); /* sync kthread start */
+static bool start_flag = false;
+
 DEFINE_SPINLOCK(counter_lock);
 struct task_struct *threads[MAX_CONTENDING_THREADS];
 
 static int writer_function(void *data)
 {
+  wait_event(start_waitq, start_flag);
   pid_t tid = current->pid;
   ktime_t start_time = ktime_get();
 
@@ -54,6 +57,7 @@ static int writer_function(void *data)
 
 static int read_function(void *data)
 {
+  wait_event(start_waitq, start_flag);
   pid_t tid = current->pid;
   ktime_t start_time = ktime_get();
 
@@ -119,14 +123,16 @@ static int __init my_mod_init(void)
     created_threads++;
   }
 
-
   
-  //threads[0] = kthread_run(read_function, NULL, "read-thread");
-  //threads[1] = kthread_run(writer_function, NULL, "write-thread");
+  start_flag = true;
+  wake_up_all(&start_waitq);
 
   return 0;
 
  terminate_threads_err:
+  start_flag = true;
+  wake_up_all(&start_waitq);
+  
   for (int i = 0; i < created_threads; i++) {
     kthread_stop(threads[i]);
   }
