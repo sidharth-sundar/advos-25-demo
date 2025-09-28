@@ -6,7 +6,7 @@
 #include <linux/spinlock.h>
 #include <linux/kthread.h>
 #include <linux/sched.h>
-
+#include <linux/timekeeping.h>
 
 #define PRINT_PREF "[SYNC_SPINLOCK]: "
 #define POLL_INTERVAL 1000 /* poll for kthread_stop every second */
@@ -27,6 +27,8 @@ struct task_struct *threads[10];
 
 static int writer_function(void *data)
 {
+  ktime_t start_time = ktime_get();
+
   int i = 0;
   while (i < ops_per_thread && !kthread_should_stop()) {
     
@@ -35,32 +37,59 @@ static int writer_function(void *data)
     spin_unlock(&counter_lock);
 
     i++;
-    //msleep(500);
+    //    msleep_interruptible(1);
   }
+
+  ktime_t end_time = ktime_get();
+  
   while(!kthread_should_stop()) {
     msleep_interruptible(POLL_INTERVAL);
   }
-  //  do_exit(0);
+
+  printk(PRINT_PREF "Total time for writer thread to perform %d ops is %lld ns (start %lld)\n", i,  end_time - start_time, start_time);
+  
   return 0;
 }
 
 static int read_function(void *data)
 {
+  ktime_t start_time = ktime_get();
+
+  unsigned int *arr = kmalloc(ops_per_thread * sizeof(unsigned int), GFP_KERNEL);
+  if (arr == NULL) {
+    goto err;
+  }
+
   int i = 0;
   while (i < ops_per_thread && !kthread_should_stop()) {
 
     spin_lock(&counter_lock);
-    printk(PRINT_PREF "counter: %d\n", counter);
+    // printk(PRINT_PREF "counter: %d\n", counter);
+    arr[i] = counter;
     spin_unlock(&counter_lock);
 
     i++;
-    //msleep(500);
+    //    msleep_interruptible(1);
   }
+
+  ktime_t end_time = ktime_get();
+  
   while(!kthread_should_stop()) {
     msleep_interruptible(POLL_INTERVAL);
   }
-  //  do_exit(0);
+
+  /* if you want to check values read during read_function, parse the array here */
+
+  printk(PRINT_PREF "Total time for reader thread to perform %d ops is %lld ns (start %lld)\n", i, end_time - start_time, start_time);
+  printk(PRINT_PREF "Last read value: %u\n", arr[ops_per_thread-1]);
+
+
+  kfree(arr);
   return 0;
+
+ err:
+  printk(PRINT_PREF "Reader failed to start, unable to allocate array\n");
+  return -ENOMEM;
 }
 
 static int __init my_mod_init(void)
