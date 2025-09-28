@@ -27,6 +27,7 @@ struct task_struct *threads[MAX_CONTENDING_THREADS];
 
 static int writer_function(void *data)
 {
+  pid_t tid = current->pid;
   ktime_t start_time = ktime_get();
 
   int i = 0;
@@ -46,13 +47,14 @@ static int writer_function(void *data)
     msleep_interruptible(POLL_INTERVAL);
   }
 
-  printk(PRINT_PREF "Total time for writer thread to perform %d ops is %lld ns (start %lld)\n", i,  end_time - start_time, start_time);
+  printk(PRINT_PREF "(thread %d) Total time for writer thread to perform %d ops is %lld ns (start %lld)\n", tid, i,  end_time - start_time, start_time);
   
   return 0;
 }
 
 static int read_function(void *data)
 {
+  pid_t tid = current->pid;
   ktime_t start_time = ktime_get();
 
   unsigned int *arr = kmalloc(ops_per_thread * sizeof(unsigned int), GFP_KERNEL);
@@ -80,8 +82,8 @@ static int read_function(void *data)
 
   /* if you want to check values read during read_function, parse the array here */
 
-  printk(PRINT_PREF "Total time for reader thread to perform %d ops is %lld ns (start %lld)\n", i, end_time - start_time, start_time);
-  printk(PRINT_PREF "Last read value: %u\n", arr[ops_per_thread-1]);
+  printk(PRINT_PREF "(thread %d) Total time for reader thread to perform %d ops is %lld ns (start %lld)\n", tid, i, end_time - start_time, start_time);
+  printk(PRINT_PREF "(thread %d) Last read value: %u\n", tid, arr[ops_per_thread-1]);
 
 
   kfree(arr);
