@@ -1,6 +1,5 @@
 #!/bin/bash
 
-OUTPUT_LINES=16
 RESULTS_DIR=results
 
 ops_per_thread=1000000
@@ -14,6 +13,8 @@ if [ ! -z "$2" ]; then
     num_readers=$2
 fi
  
+OUTPUT_LINES=$((num_readers * 2 + "(10 - num_readers)" + 1))
+
 mkdir ./${RESULTS_DIR}
 
 make

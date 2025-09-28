@@ -1,6 +1,5 @@
 #!/bin/bash
 
-OUTPUT_LINES=16
 RESULTS_DIR=results
 
 ops_per_thread=1000000
@@ -11,8 +10,10 @@ if [ ! -z "$1" ]; then
 fi
 
 if [ ! -z "$2" ]; then
-    ops_per_thread=$2
+    num_readers=$2
 fi
+
+OUTPUT_LINES=$((num_readers * 2 + "(10 - num_readers)" + 1))
 
 mkdir ./${RESULTS_DIR}
 
