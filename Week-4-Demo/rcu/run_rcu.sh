@@ -16,7 +16,7 @@ fi
 
 mkdir ./${RESULTS_DIR}
 
-make
+make > /dev/null
 sudo insmod sync_rcu.ko ops_per_thread=${ops_per_thread} num_readers=${num_readers}
 sleep 5
 sudo rmmod sync_rcu
