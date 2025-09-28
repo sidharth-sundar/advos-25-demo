@@ -13,7 +13,7 @@ if [ ! -z "$2" ]; then
     num_readers=$2
 fi
 
-OUTPUT_LINES=$((num_readers * 2 + "(10 - num_readers)" + 1))
+OUTPUT_LINES=$((num_readers * 2 + "(10 - num_readers)" + 2))
 
 mkdir ./${RESULTS_DIR}
 

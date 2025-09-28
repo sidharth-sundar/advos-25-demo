@@ -149,7 +149,7 @@ static void __exit my_mod_exit(void)
     kthread_stop(threads[i]);
   }
 
-  printk(KERN_INFO "Exiting module. Final value of contended int is %u\n", counter);
+  printk(KERN_INFO PRINT_PREF "Exiting module. Final value of contended int is %u\n", counter);
 }
 
 module_init(my_mod_init);
