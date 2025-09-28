@@ -10,12 +10,12 @@
 
 #define PRINT_PREF "[SYNC_SPINLOCK]: "
 #define POLL_INTERVAL 1000 /* poll for kthread_stop every second */
-#define MAX_CONTENDING_THREADS 2
+#define MAX_CONTENDING_THREADS 10
 static int created_threads = 0;
 
 			     
-unsigned int ops_per_thread = 1000; 
-unsigned int num_readers = 1;
+unsigned int ops_per_thread = 1000000; 
+unsigned int num_readers = 5;
 
 module_param(ops_per_thread, int, 0664);
 module_param(num_readers, int, 0664);
@@ -23,7 +23,7 @@ module_param(num_readers, int, 0664);
 unsigned int counter;	/* shared data: */
 
 DEFINE_SPINLOCK(counter_lock);
-struct task_struct *threads[10];
+struct task_struct *threads[MAX_CONTENDING_THREADS];
 
 static int writer_function(void *data)
 {
@@ -97,7 +97,7 @@ static int __init my_mod_init(void)
   printk(PRINT_PREF "Entering module.\n");
   counter = 0;
 
-  if (num_readers > MAX_CONTENDING_THREADS) {
+  if (num_readers > MAX_CONTENDING_THREADS || num_readers < 0) {
     goto err;
   }
   
@@ -141,7 +141,7 @@ static void __exit my_mod_exit(void)
     kthread_stop(threads[i]);
   }
 
-  printk(KERN_INFO "Exiting module.\n");
+  printk(KERN_INFO "Exiting module. Final value of contended int is %u\n", counter);
 }
 
 module_init(my_mod_init);
