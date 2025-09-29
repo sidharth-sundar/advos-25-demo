@@ -37,7 +37,7 @@ static int writer_function(void *data)
   int i = 0;
   while (i < ops_per_thread && !kthread_should_stop()) {
     
-    unsigned int *new_counter = kmalloc(sizeof(counter), GFP_KERNEL);
+    unsigned int *new_counter = kmalloc(sizeof(*counter), GFP_KERNEL);
     spin_lock(&counter_lock); /* block concurrent writers, but NOT readers */
 
     unsigned int *old_counter = rcu_dereference(counter); /* get valid reference to pointer being updated */
