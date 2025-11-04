@@ -1,11 +1,6 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
-#include <linux/irqnr.h>
 #include <linux/init.h>
-#include <linux/interrupt.h>
-#include <linux/irq.h>
-#include <linux/types.h>
-#include <linux/atomic.h>
 
 #define PRINT_PREF "[tutorial-module] "
 
