@@ -1,5 +1,11 @@
 This tutorial is for the CS 477 Fall 2025 class. 
 
+## Dependencies
+You'll need `e2fsprogs` (https://github.com/tytso/e2fsprogs/tree/0b2752ce6276b383a5254cd766204f81f41b6631) for `debugfs`, `e2fsck`, `mkfs.ext4` (`mke2fs`), and `dumpe2fs`. You can install these using:
+```sh
+sudo apt install e2fsprogs
+```
+
 ## Explanation of Provided Scripts
 First, configure the global parameters in `header.sh`. Set the file size (`SIZE`) and mount path (`MOUNT`) as you please.
 
